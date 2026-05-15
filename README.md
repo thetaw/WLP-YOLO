@@ -1,648 +1,639 @@
-# WLP-YOLO: Edge-efficient UAV-based Walnut Detection for Orchard Monitoring
+<div align="center">
 
-This repository provides the official implementation of **WLP-YOLO**  
-(**Walnut Lightweight-Pruned YOLO**), a lightweight and deployment-oriented object detection framework for UAV-based walnut detection in orchard environments.
+# WLP-YOLO
 
-WLP-YOLO is designed for detecting small, dense, and partially occluded walnuts in UAV imagery while maintaining real-time inference capability on resource-constrained edge devices.
+**Edge-efficient UAV-based walnut detection for orchard monitoring via lightweight YOLOv8 and structured pruning**
 
-> Paper: **WLP-YOLO: Edge-efficient UAV-based walnut detection for orchard monitoring via lightweight YOLOv8 and structured pruning**  
-> Status: Under revision  
-> Code: `REPLACE_WITH_GITHUB_REPOSITORY_LINK`  
-> Dataset: `REPLACE_WITH_DATASET_LINK`  
-> Weights: `REPLACE_WITH_PRETRAINED_WEIGHTS_LINK`
+Official repository for the paper **“WLP-YOLO: Edge-efficient UAV-based walnut detection for orchard monitoring via lightweight YOLOv8 and structured pruning”**.
+
+[![Paper](https://img.shields.io/badge/Paper-Coming%20Soon-blue)](#citation)
+[![Dataset](https://img.shields.io/badge/Dataset-Available-green)](#dataset)
+[![Platform](https://img.shields.io/badge/Platform-Jetson%20Xavier%20NX-orange)](#deployment)
+[![License](https://img.shields.io/badge/License-MIT-blue)](#license)
+
+</div>
 
 ---
 
-## 1. Overview
+## Overview
 
-UAV-based orchard monitoring provides an efficient way to support walnut yield estimation, field inspection, and precision orchard management. However, walnut detection in aerial imagery remains challenging because walnuts are often small, densely distributed, partially occluded by leaves and branches, and affected by illumination changes.
+WLP-YOLO is a lightweight and deployment-oriented walnut detection framework for UAV orchard imagery. It is designed for challenging field scenes where targets are usually **small, densely distributed, partially occluded by leaves or branches, and affected by cluttered canopy backgrounds and non-uniform illumination**.
 
-To address these challenges, this repository implements **WLP-YOLO**, a YOLOv8-based detector that integrates:
+Starting from a YOLOv8-style one-stage detector, WLP-YOLO improves the balance between accuracy and efficiency through a complete pipeline that includes:
 
-- a lightweight **Ghost-HGNetV2** backbone;
-- a compact neck with **GSConv** and **VoV-GSCSP** modules;
-- cross-scale feature fusion using **ScalSeq** and **Zoom_cat**;
-- structured channel pruning for model compression;
-- post-pruning fine-tuning for accuracy recovery;
-- optional ONNX and TensorRT deployment on edge devices.
+1. **processed UAV walnut dataset construction**
+2. **lightweight detector design**
+3. **structured channel pruning**
+4. **post-pruning fine-tuning**
+5. **edge deployment and benchmarking on Jetson Xavier NX**
 
-The overall workflow follows a **design–prune–deploy** pipeline:
+This repository provides the official implementation and supporting materials for the above pipeline, including:
+
+- the processed UAV walnut detection dataset
+- the implementation of WLP-YOLO
+- training, validation, and inference scripts
+- structured pruning and post-pruning fine-tuning scripts
+- pretrained model weights
+- edge deployment and benchmarking resources for Jetson Xavier NX
+
+---
+
+## Highlights
+
+- **Processed UAV walnut detection dataset** with YOLO-format annotations
+- **Lightweight WLP-YOLO architecture** for small and dense walnut detection
+- **Structured pruning pipeline** for model compression and deployment efficiency
+- **Training and evaluation scripts** for reproducible experiments
+- **Edge deployment resources** for Jetson Xavier NX and TensorRT-related acceleration
+
+---
+
+## Framework
+
+<div align="center">
+  <img src="assets/framework.png" width="88%" alt="WLP-YOLO framework">
+</div>
+
+<p align="center">
+Overall architecture of WLP-YOLO, including the lightweight backbone, efficient neck, cross-scale fusion modules, and three-scale detection head.
+</p>
+
+### Design philosophy
+
+The overall design of WLP-YOLO follows a practical idea:  
+**first build a lightweight but accurate detector for UAV walnut scenes, then further compress the model through structured pruning, and finally validate the deployability on an edge platform**.
+
+This design is motivated by two practical requirements:
+
+- walnut targets in UAV images are small, dense, and easily affected by occlusion and illumination variation
+- real orchard applications require not only good detection accuracy but also efficient inference on resource-constrained hardware
+
+### Main components
+
+WLP-YOLO mainly consists of the following components:
+
+- **Backbone:** GhostHGNetV2  
+  A lightweight backbone used to reduce computation while maintaining discriminative feature extraction capability for small objects.
+
+- **Neck:** GSConv and VoV-GSCSP  
+  Efficient neck modules are used to improve feature aggregation and inter-channel interaction without introducing excessive complexity.
+
+- **Cross-scale fusion:** ScalSeq and Zoom_cat  
+  These modules enhance multi-scale information interaction and improve robustness to scale variation, occlusion, and complex illumination.
+
+- **Detection head:** P3 / P4 / P5  
+  Three-scale prediction is used to support targets with different apparent sizes in UAV imagery.
+
+- **Compression:** Structured channel pruning  
+  After the base detector is trained, structured pruning is applied to reduce parameters and FLOPs in a hardware-friendly manner.
+
+- **Deployment:** Jetson Xavier NX + TensorRT-related optimization  
+  The pruned model is further used for deployment-oriented experiments on an edge AI platform.
+
+### Code mapping
+
+The core code can be organized as follows:
+
+- `models/backbones/` → backbone modules such as GhostHGNetV2
+- `models/necks/` → GSConv, VoV-GSCSP, ScalSeq, Zoom_cat
+- `models/heads/` → detection head
+- `models/wlp_yolo.yaml` → full model definition
+- `models/wlp_yolo_pruned.yaml` → pruned model definition
+- `tools/train.py` → training
+- `tools/val.py` → evaluation
+- `tools/infer.py` → image/video/folder inference
+- `tools/prune.py` → structured pruning
+- `tools/finetune_pruned.py` → fine-tuning after pruning
+- `deployment/jetson_xavier_nx/` → edge deployment scripts and logs
+
+---
+
+## Dataset
+
+The official experiments use a processed UAV walnut detection dataset with **388 cropped images (640×640)**, **YOLO-format annotations**, and a fixed **270/118 train-validation split**.
+
+### Dataset statistics
+
+| Item | Value |
+|------|------|
+| Total images | 388 |
+| Image size | 640×640 |
+| Annotation format | YOLO |
+| Number of classes | 1 (`walnut`) |
+| Train / Val split | 270 / 118 |
+
+### Dataset characteristics
+
+The dataset covers representative orchard scenarios, including:
+
+- leaf and branch occlusion
+- densely distributed small walnuts
+- uneven illumination and backlighting
+- scale variation across branches and viewpoints
+- boundary and partially visible targets
+- appearance variation caused by ripeness and surface texture differences
+
+### Dataset download
+
+**Dataset link:** [YOUR_DATASET_LINK](YOUR_DATASET_LINK)
+
+### Dataset structure
 
 ```text
-UAV walnut images
-        ↓
-YOLO-format annotation
-        ↓
-WLP-YOLO training
-        ↓
-Structured channel pruning
-        ↓
-Post-pruning fine-tuning
-        ↓
-PyTorch / ONNX / TensorRT inference
-        ↓
-Edge deployment on Jetson Xavier NX
+data/
+└── walnut_388/
+    ├── images/
+    │   ├── train/
+    │   └── val/
+    ├── labels/
+    │   ├── train/
+    │   └── val/
+    ├── splits/
+    │   ├── train.txt
+    │   └── val.txt
+    └── data.yaml
 ```
 
----
+### Dataset samples
 
-## 2. Main Features
+<div align="center">
+  <img src="assets/dataset_samples.png" width="88%" alt="Dataset samples">
+</div>
 
-- **Small-object-oriented detection**  
-  Designed for UAV walnut images where fruits occupy only a small proportion of the image.
+<p align="center">
+Representative examples from the UAV walnut detection dataset under different orchard conditions.
+</p>
 
-- **Lightweight architecture**  
-  Uses Ghost-HGNetV2, GSConv, and VoV-GSCSP to reduce parameters and computation.
+### Data preparation notes
 
-- **Cross-scale feature fusion**  
-  Incorporates ScalSeq and Zoom_cat to improve multi-scale representation under occlusion and illumination variation.
+If you would like to reproduce the experiments from scratch, please make sure that:
 
-- **Structured pruning**  
-  Removes redundant channels in a hardware-friendly manner and supports post-pruning fine-tuning.
-
-- **Edge deployment support**  
-  Provides scripts for PyTorch inference, ONNX export, TensorRT engine building, and Jetson Xavier NX benchmarking.
-
----
-
-## 3. Repository Structure
-
-```text
-WLP-YOLO/
-├── configs/
-│   ├── data/
-│   │   └── walnut.yaml
-│   ├── models/
-│   │   ├── yolov8n.yaml
-│   │   └── wlp-yolo.yaml
-│   └── pruning/
-│       └── wlp-yolo-prune.yaml
-│
-├── datasets/
-│   └── walnut/
-│       ├── images/
-│       │   ├── train/
-│       │   └── val/
-│       └── labels/
-│           ├── train/
-│           └── val/
-│
-├── models/
-│   ├── backbone/
-│   │   └── ghost_hgnetv2.py
-│   ├── neck/
-│   │   ├── slimneck.py
-│   │   ├── scaleseq.py
-│   │   └── zoom_cat.py
-│   └── modules/
-│       ├── gsconv.py
-│       └── vov_gscsp.py
-│
-├── tools/
-│   ├── train.py
-│   ├── val.py
-│   ├── predict.py
-│   ├── prune.py
-│   ├── finetune_pruned.py
-│   ├── export_onnx.py
-│   ├── build_tensorrt.py
-│   └── benchmark.py
-│
-├── weights/
-│   ├── wlp-yolo.pt
-│   └── wlp-yolo-pruned.pt
-│
-├── assets/
-│   ├── architecture.png
-│   ├── detection_examples.png
-│   └── heatmap_examples.png
-│
-├── requirements.txt
-├── README.md
-└── LICENSE
-```
+- the image directory and annotation directory follow the YOLO convention
+- the train/validation split is consistent with the released split files
+- the path settings in `data.yaml` are correct
+- sample visualization is checked before training to avoid path or label-format errors
 
 ---
 
-## 4. Installation
+## Results
 
-### 4.1 Create a Conda environment
+### Main detection results
+
+WLP-YOLO achieves a favorable balance between detection accuracy and efficiency. The full model improves the overall performance over lightweight baselines, while the pruned model further reduces model complexity with only a marginal drop in mAP@0.5.
+
+| Model | mAP@0.5 | GFLOPs | Params (M) | Model Size (MB) | FPS |
+|------|------:|------:|------:|------:|------:|
+| WLP-YOLO | 0.834 | 6.8 | 2.2 | 4.8 | 400 |
+| WLP-YOLO (pruned) | 0.832 | 2.7 | 1.0 | 2.4 | 476 |
+
+### What these results mean
+
+- the full WLP-YOLO model improves the accuracy-efficiency trade-off for UAV walnut detection
+- the pruned model preserves nearly the same mAP@0.5 while significantly reducing parameters and computational cost
+- the reduced model is better suited for resource-constrained deployment scenarios
+
+### Qualitative results
+
+<div align="center">
+  <img src="assets/qualitative_results.png" width="88%" alt="Qualitative results">
+</div>
+
+<p align="center">
+Qualitative comparison and representative detection results of WLP-YOLO in challenging orchard scenes.
+</p>
+
+### Optional result sections you may further add
+
+If you want the README to be even more complete, you can also add images or tables for:
+
+- detector comparison
+- backbone comparison
+- neck module comparison
+- ablation study
+- pruning-rate analysis
+- training and fine-tuning curves
+
+---
+
+## Installation
+
+### Main experiment environment
+
+The main training and evaluation experiments in the paper were conducted with:
+
+- **OS:** Windows 11 Professional
+- **CPU:** Intel Core i5-13600K
+- **Memory:** 64 GB DDR5 6000 MHz
+- **GPU:** NVIDIA GeForce RTX 4070 (12 GB VRAM)
+- **Python:** 3.9
+- **PyTorch:** 2.0.1
+- **CUDA:** 11.7
+
+### Create environment
 
 ```bash
-conda create -n wlp-yolo python=3.9 -y
+conda env create -f environment.yml
 conda activate wlp-yolo
+pip install -r requirements.txt
 ```
 
-### 4.2 Install PyTorch
+### Alternative installation
 
-For CUDA 11.7:
-
-```bash
-pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu117
-```
-
-For CPU-only testing:
-
-```bash
-pip install torch torchvision torchaudio
-```
-
-### 4.3 Install other dependencies
+If you do not use `environment.yml`, you may manually install the required packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-A typical `requirements.txt` includes:
+---
+
+## Training
+
+### Training setup
+
+The main training settings used in the paper are:
+
+- **optimizer:** SGD
+- **initial learning rate:** 0.01
+- **momentum:** 0.937
+- **weight decay:** 0.0005
+- **input size:** 640 × 640
+- **epochs:** 300
+- **batch size:** 8
+- **training strategy:** training from scratch without pretrained weights
+
+These settings can be stored in:
 
 ```text
-ultralytics
-opencv-python
-numpy
-pandas
-matplotlib
-tqdm
-PyYAML
-scipy
-thop
-onnx
-onnxsim
-onnxruntime
-onnxruntime-gpu
+configs/train.yaml
 ```
 
-For TensorRT deployment on Jetson Xavier NX, install TensorRT according to the JetPack version used on the device.
+### Training command
 
----
+```bash
+python tools/train.py --config configs/train.yaml
+```
 
-## 5. Dataset Preparation
+### Expected training workflow
 
-### 5.1 Dataset description
+A typical training workflow is:
 
-The UAV walnut dataset contains crop-level images generated from raw UAV imagery. The images were cropped into patches of **640 × 640 pixels** and annotated in YOLO format.
+1. prepare the dataset and verify the split files
+2. check `data.yaml` and `configs/train.yaml`
+3. start training with `tools/train.py`
+4. monitor loss curves and validation metrics
+5. save the best checkpoint for later pruning or inference
 
-The dataset contains one object class:
+### Suggested outputs
+
+The training stage typically saves:
+
+- training logs
+- validation logs
+- best model checkpoint
+- last model checkpoint
+- optional visualizations of metrics and predictions
+
+These files can be placed under:
 
 ```text
-0: walnut
-```
-
-The dataset covers several challenging orchard conditions, including:
-
-- leaf and branch occlusion;
-- non-uniform illumination;
-- low-light and backlighting scenes;
-- inter-fruit occlusion;
-- different fruit ripeness stages;
-- small and dense walnut targets.
-
-### 5.2 Dataset structure
-
-Please organize the dataset as follows:
-
-```text
-datasets/walnut/
-├── images/
-│   ├── train/
-│   │   ├── xxx.jpg
-│   │   └── ...
-│   └── val/
-│       ├── xxx.jpg
-│       └── ...
-└── labels/
-    ├── train/
-    │   ├── xxx.txt
-    │   └── ...
-    └── val/
-        ├── xxx.txt
-        └── ...
-```
-
-Each annotation file follows the standard YOLO format:
-
-```text
-class_id x_center y_center width height
-```
-
-All coordinates are normalized to the image width and height.
-
-### 5.3 Dataset configuration
-
-Create `configs/data/walnut.yaml`:
-
-```yaml
-path: datasets/walnut
-train: images/train
-val: images/val
-
-names:
-  0: walnut
-```
-
----
-
-## 6. Training
-
-### 6.1 Train WLP-YOLO from scratch
-
-```bash
-python tools/train.py \
-  --model configs/models/wlp-yolo.yaml \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --epochs 300 \
-  --batch 8 \
-  --optimizer SGD \
-  --lr0 0.01 \
-  --momentum 0.937 \
-  --weight_decay 0.0005 \
-  --device 0 \
-  --pretrained False \
-  --project runs/train \
-  --name wlp-yolo
-```
-
-### 6.2 Train YOLOv8n baseline
-
-```bash
-python tools/train.py \
-  --model configs/models/yolov8n.yaml \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --epochs 300 \
-  --batch 8 \
-  --optimizer SGD \
-  --lr0 0.01 \
-  --momentum 0.937 \
-  --weight_decay 0.0005 \
-  --device 0 \
-  --pretrained False \
-  --project runs/train \
-  --name yolov8n-baseline
-```
-
----
-
-## 7. Evaluation
-
-Evaluate the trained WLP-YOLO model:
-
-```bash
-python tools/val.py \
-  --weights runs/train/wlp-yolo/weights/best.pt \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --batch 8 \
-  --device 0 \
-  --project runs/val \
-  --name wlp-yolo
-```
-
-Evaluate the pruned model:
-
-```bash
-python tools/val.py \
-  --weights weights/wlp-yolo-pruned.pt \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --batch 8 \
-  --device 0 \
-  --project runs/val \
-  --name wlp-yolo-pruned
-```
-
-The evaluation reports:
-
-- Precision;
-- Recall;
-- F1 score;
-- mAP@0.5;
-- mAP@0.5:0.95;
-- model size;
-- parameters;
-- FLOPs;
-- inference speed.
-
----
-
-## 8. Inference
-
-Run inference on a single image:
-
-```bash
-python tools/predict.py \
-  --weights weights/wlp-yolo-pruned.pt \
-  --source examples/images/test.jpg \
-  --imgsz 640 \
-  --conf 0.25 \
-  --device 0 \
-  --save
-```
-
-Run inference on a folder:
-
-```bash
-python tools/predict.py \
-  --weights weights/wlp-yolo-pruned.pt \
-  --source examples/images/ \
-  --imgsz 640 \
-  --conf 0.25 \
-  --device 0 \
-  --save
-```
-
----
-
-## 9. Structured Channel Pruning
-
-### 9.1 Prune WLP-YOLO
-
-```bash
-python tools/prune.py \
-  --weights runs/train/wlp-yolo/weights/best.pt \
-  --model configs/models/wlp-yolo.yaml \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --prune-ratio 0.60 \
-  --device 0 \
-  --save-dir runs/prune/wlp-yolo-pruned
-```
-
-### 9.2 Fine-tune the pruned model
-
-```bash
-python tools/finetune_pruned.py \
-  --weights runs/prune/wlp-yolo-pruned/pruned.pt \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --epochs 50 \
-  --batch 8 \
-  --lr0 0.001 \
-  --device 0 \
-  --project runs/finetune \
-  --name wlp-yolo-pruned-finetune
-```
-
-The fine-tuned model will be saved as:
-
-```text
-runs/finetune/wlp-yolo-pruned-finetune/weights/best.pt
-```
-
----
-
-## 10. ONNX Export
-
-Export the pruned WLP-YOLO model to ONNX:
-
-```bash
-python tools/export_onnx.py \
-  --weights weights/wlp-yolo-pruned.pt \
-  --imgsz 640 \
-  --opset 12 \
-  --simplify \
-  --output weights/wlp-yolo-pruned.onnx
-```
-
-Check the exported ONNX model:
-
-```bash
-python tools/check_onnx.py \
-  --onnx weights/wlp-yolo-pruned.onnx \
-  --imgsz 640
-```
-
-> Note: For stable ONNX export, this repository uses export-compatible implementations of modules involving global pooling and shape-dependent operations. Please use the latest code in this repository when reproducing ONNX and TensorRT deployment results.
-
----
-
-## 11. TensorRT Deployment
-
-### 11.1 Build TensorRT engine
-
-On Jetson Xavier NX or a TensorRT-supported device:
-
-```bash
-python tools/build_tensorrt.py \
-  --onnx weights/wlp-yolo-pruned.onnx \
-  --engine weights/wlp-yolo-pruned-fp16.engine \
-  --fp16 \
-  --workspace 4096
-```
-
-Alternatively, use `trtexec`:
-
-```bash
-trtexec \
-  --onnx=weights/wlp-yolo-pruned.onnx \
-  --saveEngine=weights/wlp-yolo-pruned-fp16.engine \
-  --fp16 \
-  --workspace=4096
-```
-
-### 11.2 Run TensorRT inference
-
-```bash
-python tools/predict_trt.py \
-  --engine weights/wlp-yolo-pruned-fp16.engine \
-  --source examples/images/ \
-  --imgsz 640 \
-  --conf 0.25 \
-  --save
-```
-
-### 11.3 Benchmark on Jetson Xavier NX
-
-```bash
-python tools/benchmark.py \
-  --weights weights/wlp-yolo-pruned.pt \
-  --engine weights/wlp-yolo-pruned-fp16.engine \
-  --data configs/data/walnut.yaml \
-  --imgsz 640 \
-  --batch 4 \
-  --device 0
-```
-
----
-
-## 12. Main Results
-
-### 12.1 Comparison with representative detectors
-
-| Model | Precision | Recall | F1 | mAP@0.5 | GFLOPs | FPS | Model size | Params |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| YOLOv8n | 0.855 | 0.724 | 0.784 | 0.811 | 8.1 | 434 | 6.3 MB | 3.0 M |
-| WLP-YOLO | 0.817 | 0.775 | 0.795 | 0.834 | 6.8 | 400 | 4.8 MB | 2.2 M |
-| WLP-YOLO-pruned | 0.813 | 0.772 | 0.791 | 0.832 | 2.7 | 476 | 2.4 MB | 1.0 M |
-
-### 12.2 Edge-device inference speed
-
-| Model | RTX 4070 FPS | Jetson Xavier NX FPS |
-|---|---:|---:|
-| YOLOv8n | 854.7 | 63.4 |
-| WLP-YOLO | 570.0 | 47.0 |
-| WLP-YOLO-pruned | 925.9 | 69.6 |
-
-The reported FPS values are hardware-dependent and may vary with batch size, input/output overhead, visualization, and the number of detected objects per image.
-
----
-
-## 13. Reproducing the Paper Results
-
-To reproduce the main experimental results, run the following scripts in order:
-
-```bash
-# 1. Train YOLOv8n baseline
-bash scripts/reproduce_yolov8n.sh
-
-# 2. Train WLP-YOLO
-bash scripts/reproduce_wlp_yolo.sh
-
-# 3. Run ablation experiments
-bash scripts/reproduce_ablation.sh
-
-# 4. Prune WLP-YOLO and fine-tune
-bash scripts/reproduce_pruning.sh
-
-# 5. Evaluate PyTorch models
-bash scripts/reproduce_eval.sh
-
-# 6. Export ONNX and build TensorRT engine
-bash scripts/reproduce_deployment.sh
-
-# 7. Benchmark on edge device
-bash scripts/reproduce_benchmark.sh
-```
-
----
-
-## 14. Experimental Environment
-
-### 14.1 Training workstation
-
-The main experiments were conducted under the following environment:
-
-```text
-Operating system: Windows 11 Professional
-CPU: Intel Core i5-13600K @ 3.5 GHz
-RAM: 64 GB DDR5
-GPU: NVIDIA GeForce RTX 4070, 12 GB VRAM
-Python: 3.9
-PyTorch: 2.0.1
-CUDA: 11.7
-Input size: 640 × 640
-Batch size: 8
-Epochs: 300
-Optimizer: SGD
-Initial learning rate: 0.01
-Momentum: 0.937
-Weight decay: 0.0005
-```
-
-### 14.2 Edge device
-
-The deployment experiments were conducted on:
-
-```text
-Device: NVIDIA Jetson Xavier NX
-CPU: 6-core NVIDIA Carmel ARM v8.2
-GPU: 384-core NVIDIA Volta GPU with 48 Tensor Cores
-Memory: 8 GB LPDDR4x
-Storage: 16 GB eMMC
-JetPack: 5.1
-CUDA: 11.4
-Python: 3.8
-PyTorch: 1.12.0
-```
-
----
-
-## 15. Pretrained Weights
-
-| Model | Description | Download |
-|---|---|---|
-| `wlp-yolo.pt` | Full WLP-YOLO model | `REPLACE_WITH_WEIGHT_LINK` |
-| `wlp-yolo-pruned.pt` | Structured-pruned WLP-YOLO model | `REPLACE_WITH_WEIGHT_LINK` |
-| `wlp-yolo-pruned.onnx` | ONNX model for deployment | `REPLACE_WITH_ONNX_LINK` |
-| `wlp-yolo-pruned-fp16.engine` | TensorRT FP16 engine | `REPLACE_WITH_TRT_ENGINE_LINK` |
-
-Please place the downloaded weights under:
-
-```text
+results/logs/
 weights/
 ```
 
 ---
 
-## 16. Data Availability
+## Validation and Inference
 
-The code, configuration files, trained weights, dataset split files, and reproduction scripts associated with this study are publicly available at:
+### Validate the trained model
 
-```text
-REPLACE_WITH_GITHUB_REPOSITORY_LINK
+```bash
+python tools/val.py --config configs/train.yaml --weights weights/wlp_yolo.pt
 ```
 
-The annotated UAV walnut dataset used in this study is publicly available at:
+### Run inference on images or folders
 
-```text
-REPLACE_WITH_DATASET_LINK
+```bash
+python tools/infer.py --weights weights/wlp_yolo.pt --source path/to/images
 ```
 
-The released dataset includes:
+### Optional visualization
 
-- UAV walnut images;
-- YOLO-format annotation files;
-- training/validation split files;
-- dataset configuration file;
-- label description.
+```bash
+python tools/visualize_results.py
+```
+
+### Typical inference outputs
+
+The inference stage may produce:
+
+- predicted images
+- bounding-box visualizations
+- confidence scores
+- optional summary statistics
+
+You may store them in:
+
+```text
+results/figures/
+```
 
 ---
 
-## 17. Notes on Reproducibility
+## Pruning and Fine-tuning
 
-To improve reproducibility, this repository provides:
+### Why pruning
 
-- model configuration files;
-- dataset configuration files;
-- training scripts;
-- evaluation scripts;
-- pruning and fine-tuning scripts;
-- deployment scripts;
-- pretrained weights;
-- dataset split files;
-- benchmark scripts for desktop GPU and Jetson Xavier NX.
+After training the base detector, WLP-YOLO further applies **structured channel pruning** to reduce model size and computational complexity in a deployment-friendly way.
 
-For fair comparison, all models should be trained from scratch under the same training settings unless otherwise specified.
+Compared with unstructured sparsity, structured pruning is more suitable for real hardware acceleration because it removes channels or filters directly.
+
+### Pruning workflow
+
+A typical pruning workflow includes:
+
+1. load the trained WLP-YOLO checkpoint
+2. apply structured pruning with a target compression setting
+3. save the pruned model definition and checkpoint
+4. fine-tune the pruned model to recover performance
+5. benchmark the pruned model before deployment
+
+### Run pruning
+
+```bash
+python tools/prune.py --config configs/prune.yaml --weights weights/wlp_yolo.pt
+```
+
+### Fine-tune after pruning
+
+```bash
+python tools/finetune_pruned.py --config configs/finetune.yaml --weights weights/wlp_yolo_pruned.pt
+```
+
+### Suggested pruning outputs
+
+The pruning stage may generate:
+
+- pruned model checkpoint
+- pruning logs
+- channel statistics
+- comparison figures before and after pruning
+- fine-tuned pruned checkpoint
+
+You may store them in:
+
+```text
+results/logs/
+results/figures/
+weights/
+```
 
 ---
 
-## 18. Citation
+## Usage
 
-If this repository is useful for your research, please cite:
+### Quick start
+
+#### 1. Prepare the dataset
+
+Download the dataset and place it under:
+
+```text
+data/walnut_388/
+```
+
+Make sure that the paths in `data.yaml` are correctly configured.
+
+#### 2. Train the model
+
+```bash
+python tools/train.py --config configs/train.yaml
+```
+
+#### 3. Validate the model
+
+```bash
+python tools/val.py --config configs/train.yaml --weights weights/wlp_yolo.pt
+```
+
+#### 4. Run inference
+
+```bash
+python tools/infer.py --weights weights/wlp_yolo.pt --source path/to/images
+```
+
+#### 5. Run structured pruning
+
+```bash
+python tools/prune.py --config configs/prune.yaml --weights weights/wlp_yolo.pt
+```
+
+#### 6. Fine-tune the pruned model
+
+```bash
+python tools/finetune_pruned.py --config configs/finetune.yaml --weights weights/wlp_yolo_pruned.pt
+```
+
+### Reproducibility tips
+
+To better reproduce the reported results, please keep the following consistent:
+
+- dataset split
+- training hyperparameters
+- input size
+- random seed
+- software versions
+- evaluation settings
+
+For a more detailed step-by-step guide, you can also provide:
+
+```text
+docs/reproducibility.md
+```
+
+---
+
+## Deployment
+
+To evaluate practical deployability, the paper further tests WLP-YOLO on **NVIDIA Jetson Xavier NX**.
+
+### Edge deployment summary
+
+The repository provides deployment-oriented resources for:
+
+- PyTorch inference on Jetson Xavier NX
+- TensorRT FP32 inference
+- TensorRT FP16 inference
+- FPS benchmarking
+- deployment logs for different model variants
+
+### Jetson Xavier NX environment
+
+The Jetson Xavier NX deployment experiments in the paper use:
+
+- **Python:** 3.8
+- **PyTorch:** 1.12.0
+- **JetPack:** 5.1
+- **CUDA:** 11.4
+
+### Reported deployment performance
+
+According to the paper:
+
+- the original **WLP-YOLO** reaches **47 FPS** on Jetson Xavier NX
+- the **pruned WLP-YOLO** reaches **69.6 FPS** on Jetson Xavier NX
+
+This shows that structured pruning improves practical inference efficiency on the edge platform while preserving competitive detection performance.
+
+### Deployment workflow
+
+A typical deployment workflow includes:
+
+1. export or prepare the trained / pruned model
+2. run PyTorch-side benchmarking
+3. build TensorRT-related inference pipeline if needed
+4. benchmark latency and FPS on Jetson Xavier NX
+5. compare the full and pruned models under the same deployment conditions
+
+### Deployment directory
+
+```text
+deployment/jetson_xavier_nx/
+```
+
+### Example deployment scripts
+
+```text
+deployment/jetson_xavier_nx/
+├── README.md
+├── run_pytorch.sh
+├── run_tensorrt_fp32.sh
+├── run_tensorrt_fp16.sh
+└── benchmark_logs/
+```
+
+### Note on export
+
+If your repository includes ONNX export or TensorRT engine building scripts, you can keep them in:
+
+```text
+tools/export_onnx.py
+tools/build_tensorrt_engine.py
+```
+
+If some export paths are still experimental, it is fine to mark them as experimental in the repository and prioritize the stable PyTorch / TensorRT benchmarking pipeline.
+
+<div align="center">
+  <img src="assets/deployment.png" width="88%" alt="Deployment on Jetson Xavier NX">
+</div>
+
+<p align="center">
+Illustration of edge deployment and benchmarking on Jetson Xavier NX.
+</p>
+
+---
+
+## Repository Structure
+
+```text
+WLP-YOLO/
+├── assets/
+│   ├── framework.png
+│   ├── dataset_samples.png
+│   ├── qualitative_results.png
+│   └── deployment.png
+├── configs/
+│   ├── train.yaml
+│   ├── prune.yaml
+│   ├── finetune.yaml
+│   └── deploy.yaml
+├── data/
+│   ├── README.md
+│   └── walnut_388/
+│       ├── images/
+│       │   ├── train/
+│       │   └── val/
+│       ├── labels/
+│       │   ├── train/
+│       │   └── val/
+│       ├── splits/
+│       │   ├── train.txt
+│       │   └── val.txt
+│       └── data.yaml
+├── deployment/
+│   └── jetson_xavier_nx/
+│       ├── README.md
+│       ├── run_pytorch.sh
+│       ├── run_tensorrt_fp32.sh
+│       ├── run_tensorrt_fp16.sh
+│       └── benchmark_logs/
+├── docs/
+│   └── reproducibility.md
+├── models/
+│   ├── baseline_yolov8n.yaml
+│   ├── wlp_yolo.yaml
+│   ├── wlp_yolo_pruned.yaml
+│   ├── backbones/
+│   ├── necks/
+│   └── heads/
+├── results/
+│   ├── figures/
+│   ├── logs/
+│   └── tables/
+├── tools/
+│   ├── train.py
+│   ├── val.py
+│   ├── infer.py
+│   ├── prune.py
+│   ├── finetune_pruned.py
+│   ├── export_onnx.py
+│   ├── build_tensorrt_engine.py
+│   ├── benchmark_fps.py
+│   └── visualize_results.py
+├── weights/
+│   ├── README.md
+│   ├── wlp_yolo.pt
+│   └── wlp_yolo_pruned.pt
+├── environment.yml
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
+
+---
+
+## Weights
+
+If the model weights are too large for direct GitHub storage, they can be released through GitHub Releases or other public download services.
+
+- `wlp_yolo.pt`: [YOUR_WEIGHT_LINK](YOUR_WEIGHT_LINK)
+- `wlp_yolo_pruned.pt`: [YOUR_WEIGHT_LINK](YOUR_WEIGHT_LINK)
+
+---
+
+## Citation
+
+If you find this repository useful in your research, please cite:
 
 ```bibtex
-@article{wlp_yolo_2026,
-  title   = {WLP-YOLO: Edge-efficient UAV-based Walnut Detection for Orchard Monitoring via Lightweight YOLOv8 and Structured Pruning},
-  author  = {Wang, H. and Yibo, and Li, and Xia, and Chen, and Yun},
-  journal = {Ecological Informatics},
-  year    = {2026},
-  note    = {Under revision}
+@article{wlp_yolo,
+  title={WLP-YOLO: Edge-efficient UAV-based walnut detection for orchard monitoring via lightweight YOLOv8 and structured pruning},
+  author={YOUR_NAME and co-authors},
+  journal={To be updated},
+  year={To be updated}
 }
 ```
 
 ---
 
-## 19. License
+## Contact
 
-The source code is released under the `REPLACE_WITH_LICENSE` license.
-
-The dataset is released under the `REPLACE_WITH_DATASET_LICENSE` license.  
-Please check the dataset page for details regarding academic use, redistribution, and citation requirements.
+- **Author:** YOUR_NAME
+- **Email:** YOUR_EMAIL
+- **Repository:** [YOUR_REPO_LINK](YOUR_REPO_LINK)
 
 ---
 
-## 20. Acknowledgements
+## License
 
-This work was supported by the Yunnan Province Applied Basic Research Program Key Project.
-
-We also acknowledge the open-source YOLO community and related lightweight detection frameworks that provided valuable references for implementation and comparison.
+This project is released under the MIT License.
