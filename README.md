@@ -51,7 +51,7 @@ This repository provides the official implementation and supporting materials fo
 ## Framework
 
 <div align="center">
-  <img src="assets/framework.png" width="88%" alt="WLP-YOLO framework">
+  <img src="assets/3-Overview.jpg" width="88%" alt="WLP-YOLO framework">
 </div>
 
 <p align="center">
@@ -157,7 +157,7 @@ data/
 ### Dataset samples
 
 <div align="center">
-  <img src="assets/dataset_samples.png" width="88%" alt="Dataset samples">
+  <img src="assets/dataset.jpg" width="88%" alt="Dataset samples">
 </div>
 
 <p align="center">
@@ -195,7 +195,7 @@ WLP-YOLO achieves a favorable balance between detection accuracy and efficiency.
 ### Qualitative results
 
 <div align="center">
-  <img src="assets/qualitative_results.png" width="88%" alt="Qualitative results">
+  <img src="assets/6detect-result.jpg" width="88%" alt="Qualitative results">
 </div>
 
 <p align="center">
@@ -524,7 +524,7 @@ tools/build_tensorrt_engine.py
 If some export paths are still experimental, it is fine to mark them as experimental in the repository and prioritize the stable PyTorch / TensorRT benchmarking pipeline.
 
 <div align="center">
-  <img src="assets/deployment.png" width="88%" alt="Deployment on Jetson Xavier NX">
+  <img src="assets/11uav.png" width="88%" alt="Deployment on Jetson Xavier NX">
 </div>
 
 <p align="center">
