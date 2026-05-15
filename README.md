@@ -36,6 +36,14 @@ This repository provides the official implementation and supporting materials fo
 - pretrained model weights
 - edge deployment and benchmarking resources for Jetson Xavier NX
 
+### Why WLP-YOLO
+
+Walnut detection in UAV orchard imagery is difficult for two main reasons.  
+First, walnut targets are usually small and densely distributed, and their appearance is easily affected by leaf occlusion, branch interference, and illumination variation.  
+Second, practical orchard applications require not only reliable detection accuracy but also efficient inference on edge devices with limited computing resources.
+
+WLP-YOLO is designed to address both aspects simultaneously: it improves multi-scale feature extraction and fusion for small-object detection, and then further compresses the model through structured pruning for practical deployment.
+
 ---
 
 ## Highlights
@@ -467,6 +475,27 @@ The repository provides deployment-oriented resources for:
 - FPS benchmarking
 - deployment logs for different model variants
 
+### Edge platform
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="assets/11edge.png" width="420" alt="Edge-computing box"><br>
+        <sub>(a) Edge-computing box based on Jetson Xavier NX</sub>
+      </td>
+      <td align="center">
+        <img src="assets/11uav.png" width="420" alt="Edge box mounted on UAV"><br>
+        <sub>(b) Edge box mounted on the UAV platform</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p align="center">
+Deployment platform used in this work, including the standalone edge-computing box and its UAV-mounted configuration.
+</p>
+
 ### Jetson Xavier NX environment
 
 The Jetson Xavier NX deployment experiments in the paper use:
@@ -484,6 +513,29 @@ According to the paper:
 - the **pruned WLP-YOLO** reaches **69.6 FPS** on Jetson Xavier NX
 
 This shows that structured pruning improves practical inference efficiency on the edge platform while preserving competitive detection performance.
+
+### Deployment benchmark
+
+To further analyze runtime behavior, we benchmark YOLOv8n, WLP-YOLO, and the pruned WLP-YOLO on both the desktop GPU and the edge platform. The comparison shows that the pruned model achieves the best inference speed while maintaining strong detection performance.
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="assets/12compare1.png" width="420" alt="FPS comparison on RTX 4070"><br>
+        <sub>(a) FPS comparison on RTX 4070</sub>
+      </td>
+      <td align="center">
+        <img src="assets/12compare2.png" width="420" alt="FPS comparison on Jetson Xavier NX"><br>
+        <sub>(b) FPS comparison on Jetson Xavier NX</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p align="center">
+Inference speed comparison of YOLOv8n, WLP-YOLO, and the pruned WLP-YOLO on RTX 4070 and Jetson Xavier NX.
+</p>
 
 ### Deployment workflow
 
@@ -523,14 +575,6 @@ tools/build_tensorrt_engine.py
 
 If some export paths are still experimental, it is fine to mark them as experimental in the repository and prioritize the stable PyTorch / TensorRT benchmarking pipeline.
 
-<div align="center">
-  <img src="assets/11uav.png" width="88%" alt="Deployment on Jetson Xavier NX">
-</div>
-
-<p align="center">
-Illustration of edge deployment and benchmarking on Jetson Xavier NX.
-</p>
-
 ---
 
 ## Repository Structure
@@ -538,10 +582,13 @@ Illustration of edge deployment and benchmarking on Jetson Xavier NX.
 ```text
 WLP-YOLO/
 ├── assets/
-│   ├── framework.png
-│   ├── dataset_samples.png
-│   ├── qualitative_results.png
-│   └── deployment.png
+│   ├── 3-Overview.jpg
+│   ├── dataset.jpg
+│   ├── 6detect-result.jpg
+│   ├── 11edge.png
+│   ├── 11uav.png
+│   ├── 12compare1.png
+│   └── 12compare2.png
 ├── configs/
 │   ├── train.yaml
 │   ├── prune.yaml
