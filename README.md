@@ -137,7 +137,6 @@ TensorRT/ONNX latency experiments on Jetson Xavier NX are also provided:
 | ONNX-GPU | 30.8 | 1.60x |
 | ONNX-CPU | 200.1 | 0.25x |
 
-Note: the manuscript also notes that stable ONNX export for all improved WLP-YOLO variants still requires additional engineering because some modules introduce dynamic tensor-shape constraints.
 
 <div align="center">
   <table>
