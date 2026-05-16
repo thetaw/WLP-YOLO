@@ -28,7 +28,6 @@ The repository contains the code used for:
 - validation, inference, visualization, heatmap generation, and FPS benchmarking
 - ONNX/TensorRT-related deployment experiments
 
-This release is prepared for code availability during peer review. Generated files such as model weights, ONNX exports, TensorRT engines, cache folders, and training runs are intentionally excluded from the Git repository.
 
 ---
 
