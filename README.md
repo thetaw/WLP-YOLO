@@ -143,23 +143,20 @@ The dataset covers representative orchard scenarios, including:
 
 ### Dataset download
 
-**Dataset link:** [YOUR_DATASET_LINK](YOUR_DATASET_LINK)
+**Dataset link:** [Google Drive](https://drive.google.com/file/d/1YoDTBLYAqou6YqaENYVpAAkfeRFuDQjs/view?usp=sharing)
 
 ### Dataset structure
 
 ```text
 data/
 └── walnut_388/
-    ├── images/
-    │   ├── train/
-    │   └── val/
-    ├── labels/
-    │   ├── train/
-    │   └── val/
-    ├── splits/
-    │   ├── train.txt
-    │   └── val.txt
-    └── data.yaml
+    ├── train/
+    │   ├── images/
+    │   └── labels/
+    ├── val/
+    │   ├── images/
+    │   └── labels/
+    └── walnut.yaml
 ```
 
 ### Dataset samples
