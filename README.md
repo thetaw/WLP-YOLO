@@ -38,7 +38,6 @@ This release is prepared for code availability during peer review. Generated fil
 - **Lightweight model:** WLP-YOLO improves mAP50 from 0.811 for YOLOv8n to 0.834.
 - **Structured pruning:** the pruned model keeps 0.832 mAP50 while reducing the model to 2.7 GFLOPs and 2.4 MB.
 - **Edge deployment:** experiments are reported on NVIDIA Jetson Xavier NX with TensorRT/ONNX acceleration.
-- **Reproducible code release:** custom Ultralytics modules, model YAML files, pruning scripts, and benchmarking scripts are included.
 
 ---
 
