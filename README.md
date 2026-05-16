@@ -364,25 +364,7 @@ weights/
 
 or update the weight paths in the scripts.
 
----
 
-## Citation
-
-If this repository is useful for your research, please cite:
-
-```bibtex
-@article{wang2026wlp_yolo,
-  title   = {WLP-YOLO: Edge-efficient UAV-based walnut detection for orchard monitoring via lightweight YOLOv8 and structured pruning},
-  author  = {Wang, Huihua and Wang, Yibo and Li, Ruoyu and others},
-  journal = {Ecological Informatics},
-  year    = {2026},
-  note    = {Manuscript under review}
-}
-```
-
-Please update this entry after the paper is accepted and assigned a DOI.
-
----
 
 ## License
 
