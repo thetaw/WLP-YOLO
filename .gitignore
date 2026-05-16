@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+*.egg-info/
+build/
+dist/
+
+# Training outputs
+runs/
+logs/
+wandb/
+tensorboard/
+
+# Datasets and generated data
+data/walnut_388/
+dataset/images/
+dataset/labels/
+*.zip
+*.rar
+*.7z
+
+# Model weights and exports
+*.pt
+*.pth
+*.onnx
+*.engine
+*.trt
+*.torchscript
+*.openvino/
+*_openvino_model/
+
+# Binary extension artifacts
+*.so
+*.dll
+*.lib
+*.exp
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
