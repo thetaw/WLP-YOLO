@@ -346,14 +346,16 @@ Large generated artifacts are not included:
 - `.pytest_cache/`
 - build and dist folders
 
+---
+
 ## Weights
 
-The trained weights are released via Google Drive:
+Model weights are not committed to this repository. The trained weights are released through Google Drive:
 
 | Model | File | Description | Download |
 |------|------|-------------|----------|
-| WLP-YOLO | `wlp_yolo.pt` | Full WLP-YOLO model reported in the paper | [Google Drive]([你的链接](https://drive.google.com/file/d/1OBbVycS4jdrDyo5VEel0fU-ODW4s9tnk/view?usp=sharing)) |
-| WLP-YOLO (pruned) | `wlp_yolo_pruned.pt` | Structured-pruned WLP-YOLO model | [Google Drive]([你的链接](https://drive.google.com/file/d/1eidb0EtrBtzzsaKMmaf-IaNRDwLP3Ppl/view?usp=sharing)) |
+| WLP-YOLO | `wlp_yolo.pt` | Full, unpruned WLP-YOLO model reported in the paper | [Google Drive](https://drive.google.com/file/d/1OBbVycS4jdrDyo5VEel0fU-ODW4s9tnk/view?usp=sharing) |
+| WLP-YOLO (pruned) | `wlp_yolo_pruned.pt` | Structured-pruned WLP-YOLO model | [Google Drive](https://drive.google.com/file/d/1eidb0EtrBtzzsaKMmaf-IaNRDwLP3Ppl/view?usp=sharing) |
 
 After downloading, place the weights under:
 
@@ -361,9 +363,11 @@ After downloading, place the weights under:
 weights/
   wlp_yolo.pt
   wlp_yolo_pruned.pt
+```
 
+or update the weight paths in the scripts.
 
-
+---
 
 ## Citation
 
