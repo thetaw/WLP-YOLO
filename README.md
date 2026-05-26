@@ -80,7 +80,7 @@ The experiments use a processed UAV walnut detection dataset collected in Yangbi
 
 The dataset includes small targets, dense fruit clusters, leaf and branch occlusion, ripeness variation, low-light scenes, backlighting, and non-uniform canopy illumination.
 
-**Dataset download:** [Google Drive](https://drive.google.com/file/d/1YoDTBLYAqou6YqaENYVpAAkfeRFuDQjs/view?usp=sharing)
+**Dataset download:** [Google Drive](https://drive.google.com/file/d/1XPF78GVKF-_GjBBJizzbabm4vXqlfn5-/view?usp=drive_link)
 
 Place the dataset as:
 
